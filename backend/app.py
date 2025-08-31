@@ -13,7 +13,7 @@ def generate_ai_response(user_message):
 
     with torch.no_grad():
         outputs = model.generate(
-            inputs, 
+            input, 
             max_length=100, 
             num_return_sequences=1,
             temperature=0.7
