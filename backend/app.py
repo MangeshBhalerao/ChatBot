@@ -1,8 +1,10 @@
-from flask import Flask,request
+from flask import Flask, request
+from flask_cors import CORS
 from models.ai_models import load_model
 import torch
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 print("Loading AI Model...")
 tokenizer , model = load_model()
