@@ -76,7 +76,7 @@ export default function Home() {
           placeholder="Enter your message"
         />
 
-        <button onClick={sendMessage} className="bg-zinc-700 text-sm text-white px-4 py-2 rounded-full hover:bg-zinc-800 hover:cursor-pointer">
+        <button onClick={sendMessage} className="bg-black/50 text-sm text-white px-4 py-2 rounded-full hover:bg-zinc-800 hover:cursor-pointer">
           Send
         </button>
       </div>
