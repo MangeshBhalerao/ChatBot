@@ -4,6 +4,9 @@ from models.ai_models import load_model
 import torch
 
 app = Flask(__name__)
+### DB need to set
+
+
 CORS(app)  # Enable CORS for all routes
 
 print("Loading AI Model...")
