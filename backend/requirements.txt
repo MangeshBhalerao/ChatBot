@@ -3,3 +3,7 @@ accelerate
 tokenizers
 transformers
 torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+sqlalchemy
+psycopg2-binary
+flask-cors
