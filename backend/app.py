@@ -1,17 +1,33 @@
 from flask import Flask, request
 from flask_cors import CORS
 from models.ai_models import load_model
+from models.db import db
 import torch
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-### DB need to set
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+db.init_app(app)
 
 CORS(app)  # Enable CORS for all routes
 
 print("Loading AI Model...")
 tokenizer , model = load_model()
 print("AI Model Loaded Successfully")
+
+# Create database tables
+with app.app_context():
+    db.create_all()
+    print("Database tables created successfully")
 
 def generate_ai_response(user_message):
     input = tokenizer.encode(user_message , return_tensors="pt")
