@@ -8,7 +8,8 @@ export default function Home() {
   
   const [messages, setMessages] = useState([]);
   const [input,setInput] = useState('');
-  const [loading,setLoading] = useState(false)
+  const [loading,setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
   
   const sendMessage = async () => {
     if (!input.trim()) return; // Don't send empty messages
@@ -22,7 +23,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ 
+          message: input,
+          conversation_id: conversationId 
+        })
       });
       
       const data = await response.json();
@@ -32,6 +36,11 @@ export default function Home() {
         { type: 'user', text: input },
         { type: 'ai', text: data.response }
       ]);
+      
+      // Store conversation ID for future messages
+      if (data.conversation_id) {
+        setConversationId(data.conversation_id);
+      }
       
       setInput(''); // Clear input field
     } catch (error) {

@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS
 from models.ai_models import load_model
-from models.db import db
+from models.db import db, Conversation, Message
 import torch
 import os
 from dotenv import load_dotenv
@@ -49,14 +49,47 @@ def generate_ai_response(user_message):
 def Home():
     return 'Hello this is home'
 
-@app.route("/chat" , methods = ["POST"])
+@app.route("/chat", methods=["POST"])
 def chat():
     if request.method == "POST":
         user_message = request.json.get('message')
-    
+        conversation_id = request.json.get('conversation_id')
+        
+        # Get or create conversation
+        if conversation_id:
+            conversation = Conversation.query.get(conversation_id)
+            if not conversation:
+                return {"error": "Conversation not found"}, 404
+        else:
+            # Create new conversation
+            conversation = Conversation(title="New Chat")
+            db.session.add(conversation)
+            db.session.commit()
+        
+        # Save user message
+        user_msg = Message(
+            conversation_id=conversation.id,
+            role='user',
+            content=user_message
+        )
+        db.session.add(user_msg)
+        
+        # Generate AI response
         ai_response = generate_ai_response(user_message)
-
-        return {"response": ai_response}
+        
+        # Save AI response
+        ai_msg = Message(
+            conversation_id=conversation.id,
+            role='assistant',
+            content=ai_response
+        )
+        db.session.add(ai_msg)
+        db.session.commit()
+        
+        return {
+            "response": ai_response,
+            "conversation_id": conversation.id
+        }
     
 
 if __name__ == "__main__":
