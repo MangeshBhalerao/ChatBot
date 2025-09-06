@@ -1,9 +1,11 @@
 flask
-accelerate
-tokenizers
-transformers
-torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-sqlalchemy
-psycopg2-binary
 flask-cors
 python-dotenv
+sqlalchemy
+psycopg2-binary
+torch --index-url https://download.pytorch.org/whl/cpu
+torchvision --index-url https://download.pytorch.org/whl/cpu
+torchaudio --index-url https://download.pytorch.org/whl/cpu
+transformers
+tokenizers
+accelerate
