@@ -54,38 +54,51 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col gap-2 justify-center items-center h-screen" style={{ background: 'linear-gradient(45deg, #78a386, #000000 ,#9bc18e)' }}>
+    <div className="flex flex-col h-screen px-4 py-4 sm:px-6" style={{ background: 'linear-gradient(45deg, #78a386, #000000 ,#9bc18e)' }}>
       
       {/* Message Display Area */}
-    <div className="w-full max-w-2xl h-150 overflow-y-auto p-4">
-      {messages.map((message, index) => (
-        <div key={index} className={`mb-4 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
-          <div className={`inline-block p-3 rounded-lg max-w-xs ${
-            message.type === 'user' 
-              ? 'bg-blue-500/20 text-white' 
-              : 'bg-white/10 text-white backdrop-blur'
-          }`}>
-            {message.text}
+      <div className="flex-1 w-full max-w-4xl mx-auto overflow-y-auto p-2 sm:p-4 mb-4">
+        {messages.length === 0 && (
+          <div className="text-white/70 text-center mt-8">
+            <h2 className="text-xl sm:text-2xl mb-2">Start a conversation!</h2>
+            <p className="text-sm sm:text-base">Ask me anything...</p>
           </div>
+        )}
+        {messages.map((message, index) => (
+          <div key={index} className={`mb-3 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
+            <div className={`inline-block p-3 rounded-lg max-w-xs sm:max-w-md ${
+              message.type === 'user' 
+                ? 'bg-blue-500/20 text-white' 
+                : 'bg-white/10 text-white backdrop-blur'
+            }`}>
+              <div className="text-sm sm:text-base">{message.text}</div>
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="text-white/70 text-center">AI is thinking...</div>
+        )}
+      </div>
+
+      {/* Message Input */}
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex gap-2 rounded-full p-2 bg-black/20 backdrop-blur border border-white/20">
+          <input 
+            className="flex-1 px-4 py-2 bg-transparent border-none outline-none text-white placeholder-white/70 text-sm sm:text-base"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            placeholder="Enter your message..."
+            disabled={loading}
+          />
+          <button 
+            onClick={sendMessage} 
+            className="bg-black/50 text-white px-4 py-2 rounded-full hover:bg-zinc-800 transition-colors text-sm sm:text-base whitespace-nowrap"
+            disabled={loading}
+          >
+            {loading ? "..." : "Send"}
+          </button>
         </div>
-      ))}
-      {loading && (
-        <div className="text-white/70 text-center">AI is thinking...</div>
-      )}
-    </div>
-
-      {/* Message UI */}
-      <div className="border flex gap-2 rounded-full p-2 bg-black/20 backdrop-blur">
-        <input className=" w-150 pl-4 bg-transparent border-none outline-none"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Enter your message"
-        />
-
-        <button onClick={sendMessage} className="bg-black/50 text-sm text-white px-4 py-2 rounded-full hover:bg-zinc-800 hover:cursor-pointer">
-          Send
-        </button>
       </div>
     </div>
   );
