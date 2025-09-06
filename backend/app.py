@@ -29,19 +29,34 @@ with app.app_context():
     db.create_all()
     print("Database tables created successfully")
 
-def generate_ai_response(user_message):
-    input = tokenizer.encode(user_message , return_tensors="pt")
+def generate_ai_response(user_message , conversation_id = None):
 
+    context = ""
+    if conversation_id:
+        recent_messages = Message.query.filter_by(conversation_id=conversation_id)\
+            .order_by(Message.created_at.desc())\
+            .limit(6)\
+            .all()
+        for msg in reversed(recent_messages):  # oldest first
+            if msg.role == "user":
+                context += f"Human: {msg.content}\n"
+            else:
+                context += f"Assistant: {msg.content}\n"
+    prompt = f"""You are a helpful AI assistant. Be friendly and be helpful.
+{context}Human: {user_message}
+Assistant:"""
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
     with torch.no_grad():
         outputs = model.generate(
-            input, 
-            max_length=100, 
+            input_ids,
+            max_length=input_ids.shape[1] + 100,
             num_return_sequences=1,
             temperature=0.7
         )
-    
-    # Decode the response
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # Extract only the assistant's reply
+    if "Assistant:" in response:
+        response = response.split("Assistant:")[-1].strip()
     return response
 
 
@@ -73,10 +88,8 @@ def chat():
             content=user_message
         )
         db.session.add(user_msg)
-        
-        # Generate AI response
-        ai_response = generate_ai_response(user_message)
-        
+        # Generate AI response using conversation context
+        ai_response = generate_ai_response(user_message, conversation.id)
         # Save AI response
         ai_msg = Message(
             conversation_id=conversation.id,
@@ -85,7 +98,6 @@ def chat():
         )
         db.session.add(ai_msg)
         db.session.commit()
-        
         return {
             "response": ai_response,
             "conversation_id": conversation.id
