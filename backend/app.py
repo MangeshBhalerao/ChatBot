@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Enable CORS for all routes - allow all origins for development
-CORS(app, origins=["*"])
+CORS(app, origins=["https://chat-bot-frontend-sandy.vercel.app"])
 
 # Initialize Groq client
 groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
