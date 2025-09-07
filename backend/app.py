@@ -1,10 +1,9 @@
 from flask import Flask, request
 from flask_cors import CORS
-from models.ai_models import load_model
 from models.db import db, Conversation, Message
-import torch
 import os
 from dotenv import load_dotenv
+from groq import Groq
 
 # Load environment variables
 load_dotenv()
@@ -20,17 +19,17 @@ db.init_app(app)
 
 CORS(app)  # Enable CORS for all routes
 
-print("Loading AI Model...")
-tokenizer , model = load_model()
-print("AI Model Loaded Successfully")
+# Initialize Groq client
+groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+
+print("Groq AI client initialized successfully")
 
 # Create database tables
 with app.app_context():
     db.create_all()
     print("Database tables created successfully")
 
-def generate_ai_response(user_message , conversation_id = None):
-
+def generate_ai_response(user_message, conversation_id=None):
     context = ""
     if conversation_id:
         recent_messages = Message.query.filter_by(conversation_id=conversation_id)\
@@ -42,22 +41,28 @@ def generate_ai_response(user_message , conversation_id = None):
                 context += f"Human: {msg.content}\n"
             else:
                 context += f"Assistant: {msg.content}\n"
+    
     prompt = f"""You are a helpful AI assistant. Be friendly and be helpful.
 {context}Human: {user_message}
 Assistant:"""
-    input_ids = tokenizer.encode(prompt, return_tensors="pt")
-    with torch.no_grad():
-        outputs = model.generate(
-            input_ids,
-            max_length=input_ids.shape[1] + 100,
-            num_return_sequences=1,
-            temperature=0.7
+    
+    try:
+        # Use Groq API for AI response
+        completion = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",  # Current available model
+            messages=[
+                {"role": "system", "content": "You are a helpful AI assistant. Be friendly and helpful."},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.7,
+            max_tokens=200
         )
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    # Extract only the assistant's reply
-    if "Assistant:" in response:
-        response = response.split("Assistant:")[-1].strip()
-    return response
+        
+        response = completion.choices[0].message.content
+        return response
+    except Exception as e:
+        print(f"Error calling Groq API: {e}")
+        return "Sorry, I'm having trouble responding right now. Please try again."
 
 
 @app.route("/")
