@@ -17,7 +17,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Initialize database
 db.init_app(app)
 
-CORS(app)  # Enable CORS for all routes
+# Enable CORS for all routes - allow all origins for development
+CORS(app, origins=["*"])
 
 # Initialize Groq client
 groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
